@@ -141,7 +141,7 @@ function run_(rowNumbers, showUi) {
       return;
     }
 
-    claim.ecfDate = Utilities.formatDate(today, tz, 'M/d/yyyy');
+    claim.ecfDate = Utilities.formatDate(today, tz, 'yyyy-MM-dd');   // text: the ECF's DATE cells aren't date-formatted
     // Time included so a regenerated ECF doesn't share a name with the earlier one.
     const fileName = `ECF - ${claim.name} - ${Utilities.formatDate(today, tz, 'yyyy-MM-dd HHmm')}.xlsx`;
     const file = folder.createFile(buildEcf_(template, claim, fileName));
@@ -342,8 +342,7 @@ function fillEcfXml_(files, claim) {
   const out = {};
 
   sheet = setCell_(sheet, ECF.name, claim.name);
-  // The template's DATE cells aren't date-formatted, so dates go in as text.
-  const ecfDate = serialToIsoDate_(claim.ecfDate);
+  const ecfDate = claim.ecfDate;   // already text, e.g. '2026-11-21'
   sheet = setCell_(sheet, ECF.date, ecfDate);
   sheet = setCell_(sheet, ECF.studentNumber, Number(claim.studentNumber));
   sheet = setCell_(sheet, ECF.email, claim.email);
@@ -393,11 +392,6 @@ function fillEcfXml_(files, claim) {
     : workbook.replace(/<calcPr\b/, '<calcPr fullCalcOnLoad="1"');
 
   return out;
-}
-
-/** Excel date serial → 'yyyy-mm-dd'. */
-function serialToIsoDate_(serial) {
-  return new Date(Date.UTC(1899, 11, 30) + serial * 86400000).toISOString().slice(0, 10);
 }
 
 /** Replaces an existing cell in the sheet XML, keeping its style. */
