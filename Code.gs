@@ -34,31 +34,32 @@ const BLOCK = {
 };
 const MAX_PURCHASES = 10;
 
-// ECF cell positions (Claim Form sheet).
+// ECF cell positions (Claim Form sheet, 2026-27 template).
 const ECF = {
   SHEET_PATH: 'xl/worksheets/sheet1.xml',
   name: 'E4',
-  date: 'J4',
+  date: 'K4',
   studentNumber: 'E5',
-  team: 'J5',
+  team: 'K5',
   email: 'E7',
   worktag: 'E8',
-  claimantPrintName: 'E36',
-  claimantSignDate: 'J36',
-  approverPrintName: 'E39',
-  approverSignDate: 'J39',
-  firstRow: 15,               // purchase 1 → row 15 ... purchase 10 → row 24
-  cols: { date: 'B', vendor: 'D', amount: 'E', rate: 'F', cad: 'G', category: 'H', event: 'I', description: 'K' },
-  missingReceiptCol: 9,       // 0-based column J, where the checkboxes sit
-  total: 'E25',
+  claimantPrintName: 'E42',
+  claimantSignDate: 'K42',
+  approverPrintName: 'E45',
+  approverSignDate: 'K45',
+  firstRow: 14,               // purchase 1 → row 14 ... purchase 10 → row 23 (rows 24-28 stay blank)
+  // Column H (Project ID) isn't on the form, so it's left blank.
+  cols: { date: 'B', vendor: 'D', amount: 'E', rate: 'F', cad: 'G', category: 'I', event: 'J', description: 'L' },
+  missingReceiptCol: 10,      // 0-based column K, where the checkboxes sit
+  total: 'E29',
 
-  // Signature boxes: claimant G36:H36, team's designated approver G39:H39.
+  // Signature boxes: claimant G42:I42, team's designated approver G45:I45.
   // Positions are 0-based; sizes in EMU (914400 per inch).
   DRAWING_PATH: 'xl/drawings/drawing1.xml',
   DRAWING_RELS_PATH: 'xl/drawings/_rels/drawing1.xml.rels',
   signatures: {
-    claimant: { shapeId: 2000, col: 6, colOff: 190500, row: 35, rowOff: 25400, maxWidth: 2286000, maxHeight: 431800 },
-    approver: { shapeId: 2001, col: 6, colOff: 190500, row: 38, rowOff: 25400, maxWidth: 2286000, maxHeight: 457200 },
+    claimant: { shapeId: 2000, col: 6, colOff: 190500, row: 41, rowOff: 25400, maxWidth: 2286000, maxHeight: 431800 },
+    approver: { shapeId: 2001, col: 6, colOff: 190500, row: 44, rowOff: 25400, maxWidth: 2286000, maxHeight: 457200 },
   },
 };
 
@@ -341,7 +342,9 @@ function fillEcfXml_(files, claim) {
   const out = {};
 
   sheet = setCell_(sheet, ECF.name, claim.name);
-  sheet = setCell_(sheet, ECF.date, claim.ecfDate);
+  // The template's DATE cells aren't date-formatted, so dates go in as text.
+  const ecfDate = serialToIsoDate_(claim.ecfDate);
+  sheet = setCell_(sheet, ECF.date, ecfDate);
   sheet = setCell_(sheet, ECF.studentNumber, Number(claim.studentNumber));
   sheet = setCell_(sheet, ECF.email, claim.email);
   if (CONFIG.TEAM_NAME) sheet = setCell_(sheet, ECF.team, CONFIG.TEAM_NAME);
@@ -350,8 +353,8 @@ function fillEcfXml_(files, claim) {
   if (CONFIG.APPROVER_NAME) sheet = setCell_(sheet, ECF.approverPrintName, CONFIG.APPROVER_NAME);
 
   // Date each signature with the day the ECF is generated.
-  if (claim.signature) sheet = setCell_(sheet, ECF.claimantSignDate, claim.ecfDate);
-  if (claim.approverSignature) sheet = setCell_(sheet, ECF.approverSignDate, claim.ecfDate);
+  if (claim.signature) sheet = setCell_(sheet, ECF.claimantSignDate, ecfDate);
+  if (claim.approverSignature) sheet = setCell_(sheet, ECF.approverSignDate, ecfDate);
 
   let total = 0;
   const missingRows = [];
@@ -390,6 +393,11 @@ function fillEcfXml_(files, claim) {
     : workbook.replace(/<calcPr\b/, '<calcPr fullCalcOnLoad="1"');
 
   return out;
+}
+
+/** Excel date serial → 'yyyy-mm-dd'. */
+function serialToIsoDate_(serial) {
+  return new Date(Date.UTC(1899, 11, 30) + serial * 86400000).toISOString().slice(0, 10);
 }
 
 /** Replaces an existing cell in the sheet XML, keeping its style. */

@@ -28,10 +28,20 @@ const CONFIG = {
   STATUS_DONE: 'ECF Generated',
   STATUS_FAILED: 'Needs Info',
 
-  VALID_CATEGORIES: ['Prototype Project', 'Professional Development', 'Competition', 'Administrative Expenses'],
+  // The 2026-27 ECF's Expense Category list, spelled exactly as in its dropdown.
+  VALID_CATEGORIES: [
+    'Prototype Project',
+    'Competition - People Costs',
+    'Competition - Physical Logistics',
+    'Professional Development',
+    'Operational/Administrative Expenses',
+  ],
 
   // Form wording → ECF category. Remove an entry once the form uses the ECF wording.
+  // A plain "Competition" answer is rejected (Needs Info): the ECF now splits it into
+  // People Costs and Physical Logistics, so update the form's options to match.
   CATEGORY_ALIASES: {
     'Prototyping Project': 'Prototype Project',
+    'Administrative Expenses': 'Operational/Administrative Expenses',
   },
 };

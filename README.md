@@ -1,7 +1,7 @@
 # ECF Pipeline
 
 A Google Apps Script that turns reimbursement requests from a Google Form into filled-in
-**UBC Engineering Design Teams Expense Claim Forms (ECFs)**.
+**UBC Engineering Design Teams Expense Claim Forms (ECFs)**. Built for the **2026-27** ECF template.
 
 Making an ECF by hand used to take **15–30 minutes per request**. With this script it takes a few minutes,
 most of which is checking the result.
@@ -25,13 +25,15 @@ For each form response (one response = one claimant = one ECF):
      Text around it is fine: `100 CAD`, `CAD 100`, `$1,234.50` and `USD 45.99` all work;
      `1 USD = 1.38 CAD` is flagged because it isn't clear which number is meant.
    - Student Number must be a number; Purchase Date must be a date.
-   - Expense Category must be one of the 4 ECF categories. Form wordings that differ
-     (e.g. "Prototyping Project") can be mapped in `CATEGORY_ALIASES`.
+   - Expense Category must be one of the 5 ECF categories (Prototype Project, Competition - People Costs,
+     Competition - Physical Logistics, Professional Development, Operational/Administrative Expenses).
+     Form wordings that differ (e.g. "Prototyping Project") can be mapped in `CATEGORY_ALIASES`.
    - Full Name and Vendor can't be empty.
    - The Signature link must open a PNG or JPG image.
 3. **Fills a copy of the ECF:**
    - Header: legal name, date, student #, email, design team, worktag
    - Purchase rows 1–10: date, vendor, amount, exchange rate, category, project/event, purpose
+     (the ECF has 15 rows but the form collects at most 10; the Project ID column is left blank)
    - Ticks the **Missing Receipt** checkbox on purchases marked "Yes"
    - Claimant box: print name, signature image from the form upload, and date
    - Team's designated approver box: print name, signature image, and date (set once in the config)
@@ -98,9 +100,12 @@ function `generateForPendingScheduled`, *Time-driven*, *Week timer*, *Every Satu
 - **Run the script from the form owner's Google account.** Form uploads (signatures) belong to that account.
 - **Signatures go in exactly as uploaded.** A grey background or a sideways photo will look that way on the ECF.
   iPhone HEIC photos aren't supported.
-- **Check the signing rules.** The ECF says image copies of signatures may not be accepted;
-  confirm with your finance contact that pasted signatures are OK for your team.
+- **Check the signing rules.** The 2026-27 ECF says pasted signature images are not accepted
+  (sign the PDF electronically or approve by email instead). Confirm with your finance contact before
+  relying on the signature images; set `APPROVER_SIGNATURE_FILE_ID` to `''` to leave the approver box for a real signature.
 - The script writes `.xlsx` only. Export to PDF from Excel if you need one.
+- **New ECF version?** Cell positions live in `ECF` at the top of `Code.gs` and categories in `Config.gs`.
+  If the finance office changes the layout, those are the places to update.
 
 ## How it works (for developers)
 
